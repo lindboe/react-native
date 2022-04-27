@@ -432,7 +432,7 @@ jobs:
   # -------------------------
   #     JOBS: iOS Unit Tests
   # -------------------------
-  test_ios_unit:
+  ios_unit_and_integration_tests:
     executor: reactnativeios
     parameters:
       use_frameworks:
@@ -1252,7 +1252,7 @@ workflows:
             - build_npm_package
       - test_ios_rntester
       - build_ios
-      - test_ios_unit:
+      - ios_unit_and_integration_tests:
           run_unit_tests: true
           requires:
             - build_ios
@@ -1260,8 +1260,8 @@ workflows:
       # - build_ios:
       #     name: build_ios_frameworks
       #     use_frameworks: true
-      # - test_ios_unit:
-      #     name: test_ios_unit_frameworks
+      # - ios_unit_and_integration_tests:
+      #     name: ios_unit_and_integration_tests_frameworks
       #     use_frameworks: true
       #     run_unit_tests: true
       #     requires:

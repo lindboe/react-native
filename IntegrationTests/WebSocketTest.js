@@ -62,6 +62,7 @@ class WebSocketTest extends React.Component<{...}, State> {
 
   _connect = () => {
     const socket = new WebSocket(this.state.url);
+    console.log(`>>> Socket server url should be: ${this.state.url}`);
     WS_EVENTS.forEach(ev => socket.addEventListener(ev, this._onSocketEvent));
     this.setState({
       socket,
@@ -115,31 +116,39 @@ class WebSocketTest extends React.Component<{...}, State> {
   }
 
   testConnect: () => void = () => {
+    console.log('>>> Testing connect...');
     this._connect();
     this._waitFor(this._socketIsConnected, 5, connectSucceeded => {
       if (!connectSucceeded) {
         TestModule.markTestPassed(false);
+        console.log('>>> Connect test failed.');
         return;
       }
+      console.log('>>> Connect test ended successfully.');
       this.testSendAndReceive();
     });
   };
 
   testSendAndReceive: () => void = () => {
+    console.log('>>> Testing sendAndReceive...');
     this._sendTestMessage();
     this._waitFor(this._receivedTestExpectedResponse, 5, messageReceived => {
       if (!messageReceived) {
         TestModule.markTestPassed(false);
+        console.log('>>> Test sendAndReceive failed.');
         return;
       }
+      console.log('>>> Test sendAndReceive ended successfully.');
       this.testDisconnect();
     });
   };
 
   testDisconnect: () => void = () => {
+    console.log('>>> Testing disconnect...');
     this._disconnect();
     this._waitFor(this._socketIsDisconnected, 5, disconnectSucceeded => {
       TestModule.markTestPassed(disconnectSucceeded);
+      console.log('>>> Test disconnect ended successfully.');
     });
   };
 
