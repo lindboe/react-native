@@ -17,6 +17,7 @@ import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.common.mapbuffer.MapBuffer
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.uimanager.PixelUtil.toPixelFromDIP
 import com.facebook.react.uimanager.PixelUtil.toPixelFromSP
 import com.facebook.react.uimanager.ReactAccessibilityDelegate
@@ -74,7 +75,11 @@ public class TextAttributeProps private constructor() {
   public var numberOfLines: Int = ReactConstants.UNSET
     private set
 
-  public var fontSize: Int = ReactConstants.UNSET
+  /**
+   * The font size in pixels, or [ReactConstants.UNSET] (as a Float) when not set. Rounded up to a
+   * whole pixel unless `enableFractionalFontSizeAndroid` is on.
+   */
+  public var fontSize: Float = ReactConstants.UNSET.toFloat()
     private set
 
   private var fontSizeInput: Float = ReactConstants.UNSET.toFloat()
@@ -189,11 +194,13 @@ public class TextAttributeProps private constructor() {
     fontSizeInput = fontSizeLocal
     if (fontSizeLocal != ReactConstants.UNSET.toFloat()) {
       fontSizeLocal =
-          if (allowFontScaling)
-              ceil(toPixelFromSP(fontSize, maxFontSizeMultiplier).toDouble()).toFloat()
-          else ceil(toPixelFromDIP(fontSize).toDouble()).toFloat()
+          if (allowFontScaling) toPixelFromSP(fontSize, maxFontSizeMultiplier)
+          else toPixelFromDIP(fontSize)
+      if (!ReactNativeFeatureFlags.enableFractionalFontSizeAndroid()) {
+        fontSizeLocal = ceil(fontSizeLocal.toDouble()).toFloat()
+      }
     }
-    this.fontSize = fontSizeLocal.toInt()
+    this.fontSize = fontSizeLocal
   }
 
   public var color: Int? = null

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<13ce24473fdf631a2689e2ad89904fcd>>
+ * @generated SignedSource<<6663860485258b13a76da77a18a67454>>
  */
 
 /**
@@ -175,6 +175,11 @@ class ReactNativeFeatureFlags {
    * Enables font scale changes updating layout for measurable nodes.
    */
   RN_EXPORT static bool enableFontScaleChangesUpdatingLayout();
+
+  /**
+   * When enabled, Android renders text at the unrounded pixel font size (fontSize x fontScale x density) instead of rounding it up to a whole pixel, and rounds line heights to the nearest pixel instead of up.
+   */
+  RN_EXPORT static bool enableFractionalFontSizeAndroid();
 
   /**
    * Adjusts iOS Text drawing frames for compressed explicit line heights.

@@ -1133,7 +1133,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
     // property hasn't been set.
     // `getEffectiveFontSize` always returns a value so don't need to check for anything like
     // `Float.NaN`.
-    setTextSize(TypedValue.COMPLEX_UNIT_PX, textAttributes.effectiveFontSize.toFloat())
+    setTextSize(TypedValue.COMPLEX_UNIT_PX, textAttributes.effectiveFontSize)
 
     val effectiveLetterSpacing = textAttributes.effectiveLetterSpacing
     if (!effectiveLetterSpacing.isNaN()) {

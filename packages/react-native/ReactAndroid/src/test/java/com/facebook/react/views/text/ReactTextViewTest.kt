@@ -53,7 +53,7 @@ class ReactTextViewTest {
     val width = 200
     val tallHeight = 200
     val shortHeight = 20
-    val largeFontSize = 40
+    val largeFontSize = 40f
 
     val text = SpannableString("Hello")
     text.setSpan(
@@ -118,8 +118,8 @@ class ReactTextViewTest {
     view.drawTextForTest(Canvas(createBitmap(width, height)))
   }
 
-  private fun largestAbsoluteSizeSpan(text: Spanned): Int =
-      text.getSpans(0, text.length, ReactAbsoluteSizeSpan::class.java).maxOfOrNull { it.size } ?: 0
+  private fun largestAbsoluteSizeSpan(text: Spanned): Float =
+      text.getSpans(0, text.length, ReactAbsoluteSizeSpan::class.java).maxOfOrNull { it.size } ?: 0f
 
   private fun drawReactTextViewWithOverflow(overflow: String?): Bitmap {
     return drawReactTextViewWithOverflow(overflow, lineHeight = 24, viewHeight = 24, gravity = null)

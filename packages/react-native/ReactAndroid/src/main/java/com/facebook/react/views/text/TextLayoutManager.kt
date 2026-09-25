@@ -60,6 +60,7 @@ import com.facebook.react.views.text.internal.span.ShadowStyleSpan
 import com.facebook.react.views.text.internal.span.TextInlineViewPlaceholderSpan
 import com.facebook.yoga.YogaMeasureMode
 import com.facebook.yoga.YogaMeasureOutput
+import java.util.IdentityHashMap
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -891,8 +892,8 @@ internal object TextLayoutManager {
       assets: AssetManager,
       fontWeightAdjustment: Int,
   ) {
-    if (baseTextAttributes.fontSize != ReactConstants.UNSET) {
-      paint.textSize = baseTextAttributes.fontSize.toFloat()
+    if (baseTextAttributes.fontSize != ReactConstants.UNSET.toFloat()) {
+      paint.textSize = baseTextAttributes.fontSize
     }
 
     if (
@@ -1234,16 +1235,29 @@ internal object TextLayoutManager {
     val minimumFontSize =
         (if (minimumFontSizeAttr.isNaN()) 4.dpToPx() else minimumFontSizeAttr).toInt()
 
-    // Find the largest font size used in the spannable to use as a starting point.
+    // Find the largest font size used in the spannable to use as a starting point. The search
+    // itself runs over whole-pixel sizes; span sizes may be fractional and are scaled
+    // proportionally.
     var currentFontSize = minimumFontSize
     val spans = text.getSpans(0, text.length, ReactAbsoluteSizeSpan::class.java)
     for (span in spans) {
-      currentFontSize = max(currentFontSize, span.size)
+      currentFontSize = max(currentFontSize, ceil(span.size).toInt())
     }
 
     var intervalStart = minimumFontSize
     var intervalEnd = currentFontSize
     var previousFontSize = currentFontSize
+
+    // With fractional font sizes each candidate is derived from the original sizes rather than
+    // from the previous iteration, so that repeated scaling does not accumulate float error and
+    // text that already fits ends up at exactly its original size.
+    val fractionalFontSize = ReactNativeFeatureFlags.enableFractionalFontSizeAndroid()
+    val initialFontSize = currentFontSize
+    val initialPaintTextSize = paint.textSize
+    val originalSpanSizes = IdentityHashMap<ReactAbsoluteSizeSpan, Float>()
+    for (span in spans) {
+      originalSpanSizes[span] = span.size
+    }
 
     // `true` instead of `intervalStart != intervalEnd` so that the last iteration where both are at
     // the same size goes through and updates all relevant objects with the final font size
@@ -1254,18 +1268,34 @@ internal object TextLayoutManager {
       // we always end up doing two measurements to check whether intervalEnd would fit.
       val currentFontSize = (intervalStart + intervalEnd + 1) / 2
 
-      val ratio = currentFontSize.toFloat() / previousFontSize.toFloat()
-      paint.textSize = max((paint.textSize * ratio).toInt(), minimumFontSize).toFloat()
-
       val sizeSpans = text.getSpans(0, text.length, ReactAbsoluteSizeSpan::class.java)
-      for (span in sizeSpans) {
-        text.setSpan(
-            ReactAbsoluteSizeSpan(max((span.size * ratio).toInt(), minimumFontSize)),
-            text.getSpanStart(span),
-            text.getSpanEnd(span),
-            text.getSpanFlags(span),
-        )
-        text.removeSpan(span)
+      if (fractionalFontSize) {
+        val scale = currentFontSize.toFloat() / initialFontSize.toFloat()
+        paint.textSize = max(initialPaintTextSize * scale, minimumFontSize.toFloat())
+        for (span in sizeSpans) {
+          val originalSize = originalSpanSizes.remove(span) ?: span.size
+          val newSpan = ReactAbsoluteSizeSpan(max(originalSize * scale, minimumFontSize.toFloat()))
+          originalSpanSizes[newSpan] = originalSize
+          text.setSpan(
+              newSpan,
+              text.getSpanStart(span),
+              text.getSpanEnd(span),
+              text.getSpanFlags(span),
+          )
+          text.removeSpan(span)
+        }
+      } else {
+        val ratio = currentFontSize.toFloat() / previousFontSize.toFloat()
+        paint.textSize = max((paint.textSize * ratio).toInt(), minimumFontSize).toFloat()
+        for (span in sizeSpans) {
+          text.setSpan(
+              ReactAbsoluteSizeSpan(max((span.size * ratio).toInt(), minimumFontSize).toFloat()),
+              text.getSpanStart(span),
+              text.getSpanEnd(span),
+              text.getSpanFlags(span),
+          )
+          text.removeSpan(span)
+        }
       }
       if (boring != null) {
         boring = isBoring(text, paint)
