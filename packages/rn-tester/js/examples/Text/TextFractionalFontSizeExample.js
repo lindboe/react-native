@@ -10,10 +10,11 @@
 
 import type {LayoutChangeEvent, TextLayoutEvent} from 'react-native';
 
+import RNTNativeTextReference from '../../../NativeComponentExample/js/NativeTextReferenceNativeComponent';
 import RNTesterText from '../../components/RNTesterText';
 import * as React from 'react';
 import {useState} from 'react';
-import {PixelRatio, StyleSheet, Text, View} from 'react-native';
+import {PixelRatio, StyleSheet, Text, TextInput, View} from 'react-native';
 
 type TextLayoutLine = TextLayoutEvent['nativeEvent']['lines'][number];
 
@@ -45,6 +46,17 @@ function TextFractionalFontSizeExample(): React.Node {
     .fill(FRACTIONAL_FONT_SIZE_LINE)
     .join('\n');
 
+  // Verification helper: mirror the on-screen numbers to logcat (ReactNativeJS).
+  console.log(
+    '[FractionalFontSize]',
+    JSON.stringify({
+      density,
+      fontScale,
+      blockHeightPx,
+      lines: (lines ?? []).map(l => ({w: px(l.width), h: px(l.height)})),
+    }),
+  );
+
   return (
     <View testID="text-fractional-font-size">
       <RNTesterText variant="label">
@@ -53,6 +65,23 @@ function TextFractionalFontSizeExample(): React.Node {
         lineHeight {FRACTIONAL_LINE_HEIGHT} ={' '}
         {px(FRACTIONAL_LINE_HEIGHT * fontScale)} px
       </RNTesterText>
+      <RNTesterText variant="label">Native TextView reference</RNTesterText>
+      <RNTNativeTextReference
+        text={text}
+        textSizePx={FRACTIONAL_FONT_SIZE * fontScale * density}
+        lineHeightPx={Math.round(FRACTIONAL_LINE_HEIGHT * fontScale * density)}
+        style={[
+          styles.block,
+          {
+            width: '100%',
+            height:
+              (Math.round(FRACTIONAL_LINE_HEIGHT * fontScale * density) *
+                FRACTIONAL_FONT_SIZE_LINE_COUNT) /
+              density,
+          },
+        ]}
+      />
+      <RNTesterText variant="label">React Native Text</RNTesterText>
       <View
         style={styles.block}
         onLayout={(ev: LayoutChangeEvent) =>
@@ -82,6 +111,15 @@ function TextFractionalFontSizeExample(): React.Node {
 }
 
 const styles = StyleSheet.create({
+  sameStyle: {
+    fontSize: FRACTIONAL_FONT_SIZE,
+    lineHeight: FRACTIONAL_LINE_HEIGHT,
+    padding: 0,
+    margin: 0,
+    borderWidth: 0,
+    color: 'black',
+    backgroundColor: 'transparent',
+  },
   block: {
     alignSelf: 'flex-start',
     borderWidth: StyleSheet.hairlineWidth,
@@ -93,5 +131,48 @@ const styles = StyleSheet.create({
     fontFamily: 'monospace',
   },
 });
+
+/** Verification helper: regression cases for the flag. */
+export function TextFractionalFontSizeRegressionExample(): React.Node {
+  return (
+    <View>
+      <RNTesterText variant="label">
+        Ellipsis with padding (react-native issue 36350): must end with …
+      </RNTesterText>
+      <Text style={{padding: 27, fontSize: 30}} numberOfLines={1}>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+      </Text>
+      <Text
+        style={{padding: 27, fontSize: 30, fontFamily: 'Rubik'}}
+        numberOfLines={1}>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+      </Text>
+      <RNTesterText variant="label">
+        Text vs TextInput (value and placeholder) with the same style
+      </RNTesterText>
+      <Text style={styles.sameStyle}>The quick brown fox jumps over</Text>
+      <TextInput
+        style={styles.sameStyle}
+        value="The quick brown fox jumps over"
+      />
+      <TextInput
+        style={styles.sameStyle}
+        placeholder="The quick brown fox jumps over"
+      />
+      <TextInput
+        style={styles.sameStyle}
+        multiline
+        value={'The quick brown fox jumps over\nThe quick brown fox jumps over'}
+      />
+      <Text style={[styles.sameStyle, {letterSpacing: 2}]}>
+        letterSpacing 2: The quick brown fox
+      </Text>
+      <TextInput
+        style={[styles.sameStyle, {letterSpacing: 2}]}
+        value="letterSpacing 2: The quick brown fox"
+      />
+    </View>
+  );
+}
 
 export default TextFractionalFontSizeExample;

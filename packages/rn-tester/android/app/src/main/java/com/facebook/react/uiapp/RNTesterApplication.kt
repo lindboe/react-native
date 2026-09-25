@@ -24,10 +24,14 @@ import com.facebook.react.bridge.NativeModule
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.common.assets.ReactFontManager
 import com.facebook.react.defaults.DefaultReactHost
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsOverrides_RNOSS_Stable_Android
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsProvider
 import com.facebook.react.module.model.ReactModuleInfo
 import com.facebook.react.module.model.ReactModuleInfoProvider
 import com.facebook.react.uiapp.component.MyLegacyViewManager
 import com.facebook.react.uiapp.component.MyNativeViewManager
+import com.facebook.react.uiapp.component.NativeTextReferenceViewManager
 import com.facebook.react.uiapp.component.ReportFullyDrawnViewManager
 import com.facebook.react.uimanager.ReactShadowNode
 import com.facebook.react.uimanager.ViewManager
@@ -86,6 +90,7 @@ internal class RNTesterApplication : Application(), ReactApplication {
                             "RNTMyNativeView",
                             "RNTMyLegacyNativeView",
                             "RNTReportFullyDrawnView",
+                            "RNTNativeTextReference",
                         )
 
                     override fun createViewManagers(
@@ -95,6 +100,7 @@ internal class RNTesterApplication : Application(), ReactApplication {
                             MyNativeViewManager(),
                             MyLegacyViewManager(reactContext),
                             ReportFullyDrawnViewManager(),
+                            NativeTextReferenceViewManager(),
                         )
 
                     override fun createViewManager(
@@ -105,6 +111,7 @@ internal class RNTesterApplication : Application(), ReactApplication {
                           "RNTMyNativeView" -> MyNativeViewManager()
                           "RNTMyLegacyNativeView" -> MyLegacyViewManager(reactContext)
                           "RNTReportFullyDrawnView" -> ReportFullyDrawnViewManager()
+                          "RNTNativeTextReference" -> NativeTextReferenceViewManager()
                           else -> null
                         }
                   },
@@ -128,5 +135,23 @@ internal class RNTesterApplication : Application(), ReactApplication {
     // feature flag overrides applied during React Native startup.
     FBRNTesterEndToEndHelper.initializeConfig(this)
     loadReactNative(this)
+    // Verification helper: `adb shell setprop debug.rntester.fractional_font_size 1` turns on
+    // enableFractionalFontSizeAndroid for the next launch of the app.
+    if (readSystemProperty("debug.rntester.fractional_font_size") == "1") {
+      ReactNativeFeatureFlags.dangerouslyForceOverride(
+          object :
+              ReactNativeFeatureFlagsProvider by ReactNativeFeatureFlagsOverrides_RNOSS_Stable_Android() {
+            override fun enableFractionalFontSizeAndroid(): Boolean = true
+          }
+      )
+    }
   }
+
+  private fun readSystemProperty(name: String): String? =
+      try {
+        val clazz = Class.forName("android.os.SystemProperties")
+        clazz.getMethod("get", String::class.java).invoke(null, name) as? String
+      } catch (e: Exception) {
+        null
+      }
 }
