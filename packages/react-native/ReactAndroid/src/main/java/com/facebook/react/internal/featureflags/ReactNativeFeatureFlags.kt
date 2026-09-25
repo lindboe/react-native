@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<ab68be1fe69275aae7e13121d0827f0e>>
+ * @generated SignedSource<<32c590efe2545e242009ddae6f5dedc9>>
  */
 
 /**
@@ -191,6 +191,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableFontScaleChangesUpdatingLayout(): Boolean = accessor.enableFontScaleChangesUpdatingLayout()
+
+  /**
+   * When enabled, Android renders text at the unrounded pixel font size (fontSize x fontScale x density) instead of rounding it up to a whole pixel, and rounds line heights to the nearest pixel instead of up.
+   */
+  @JvmStatic
+  public fun enableFractionalFontSizeAndroid(): Boolean = accessor.enableFractionalFontSizeAndroid()
 
   /**
    * Adjusts iOS Text drawing frames for compressed explicit line heights.

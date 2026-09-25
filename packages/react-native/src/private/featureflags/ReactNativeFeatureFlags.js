@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<6b2999150545a720138207180a81930e>>
+ * @generated SignedSource<<a117d01488500f6b2b6d65c50959a385>>
  * @flow strict
  * @noformat
  */
@@ -76,6 +76,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableFabricLogs: Getter<boolean>,
   enableFlexboxAutoMinSizeInStrictMode: Getter<boolean>,
   enableFontScaleChangesUpdatingLayout: Getter<boolean>,
+  enableFractionalFontSizeAndroid: Getter<boolean>,
   enableIOSCompressedTextFrameAdjustment: Getter<boolean>,
   enableIOSTextBaselineOffsetPerLine: Getter<boolean>,
   enableIOSViewClipToPaddingBox: Getter<boolean>,
@@ -321,6 +322,10 @@ export const enableFlexboxAutoMinSizeInStrictMode: Getter<boolean> = createNativ
  * Enables font scale changes updating layout for measurable nodes.
  */
 export const enableFontScaleChangesUpdatingLayout: Getter<boolean> = createNativeFlagGetter('enableFontScaleChangesUpdatingLayout', true);
+/**
+ * When enabled, Android renders text at the unrounded pixel font size (fontSize x fontScale x density) instead of rounding it up to a whole pixel, and rounds line heights to the nearest pixel instead of up.
+ */
+export const enableFractionalFontSizeAndroid: Getter<boolean> = createNativeFlagGetter('enableFractionalFontSizeAndroid', false);
 /**
  * Adjusts iOS Text drawing frames for compressed explicit line heights.
  */

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<e1975888fd74fc71b02f0c1e739ea13f>>
+ * @generated SignedSource<<5dcb12a403a186a8d062c3ccff9e17fe>>
  */
 
 /**
@@ -91,6 +91,8 @@ class NativeReactNativeFeatureFlags
   bool enableFlexboxAutoMinSizeInStrictMode(jsi::Runtime& runtime);
 
   bool enableFontScaleChangesUpdatingLayout(jsi::Runtime& runtime);
+
+  bool enableFractionalFontSizeAndroid(jsi::Runtime& runtime);
 
   bool enableIOSCompressedTextFrameAdjustment(jsi::Runtime& runtime);
 

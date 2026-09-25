@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<32b83f89bbe2015f8e5dc52bbd621921>>
+ * @generated SignedSource<<f9b2d9e0accd16ee1b828ef624e5a699>>
  */
 
 /**
@@ -132,6 +132,10 @@ bool ReactNativeFeatureFlags::enableFlexboxAutoMinSizeInStrictMode() {
 
 bool ReactNativeFeatureFlags::enableFontScaleChangesUpdatingLayout() {
   return getAccessor().enableFontScaleChangesUpdatingLayout();
+}
+
+bool ReactNativeFeatureFlags::enableFractionalFontSizeAndroid() {
+  return getAccessor().enableFractionalFontSizeAndroid();
 }
 
 bool ReactNativeFeatureFlags::enableIOSCompressedTextFrameAdjustment() {

@@ -337,6 +337,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    enableFractionalFontSizeAndroid: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-09-24',
+        description:
+          'When enabled, Android renders text at the unrounded pixel font size (fontSize x fontScale x density) instead of rounding it up to a whole pixel, and rounds line heights to the nearest pixel instead of up.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     enableIOSCompressedTextFrameAdjustment: {
       defaultValue: false,
       metadata: {

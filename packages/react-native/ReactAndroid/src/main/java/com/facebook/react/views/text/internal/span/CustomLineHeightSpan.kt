@@ -9,6 +9,7 @@ package com.facebook.react.views.text.internal.span
 
 import android.graphics.Paint.FontMetricsInt
 import android.text.style.LineHeightSpan
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import kotlin.math.ceil
 import kotlin.math.floor
 
@@ -18,7 +19,11 @@ import kotlin.math.floor
  * (does not impact space before the first line or after the last).
  */
 internal class CustomLineHeightSpan(height: Float) : LineHeightSpan, ReactSpan {
-  val lineHeight: Int = ceil(height.toDouble()).toInt()
+  // Android line heights are integral. Historically the requested height was rounded up; with
+  // `enableFractionalFontSizeAndroid` it is rounded to nearest, matching TextView.setLineHeight().
+  val lineHeight: Int =
+      if (ReactNativeFeatureFlags.enableFractionalFontSizeAndroid()) Math.round(height)
+      else ceil(height.toDouble()).toInt()
 
   override fun chooseHeight(
       text: CharSequence,

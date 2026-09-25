@@ -16,6 +16,9 @@ import hotdog from '../../assets/hotdog.jpg';
 import RNTesterText from '../../components/RNTesterText';
 import TextLegend from '../../components/TextLegend';
 import TextAdjustsDynamicLayoutExample from './TextAdjustsDynamicLayoutExample';
+import TextFractionalFontSizeExample, {
+  TextFractionalFontSizeRegressionExample,
+} from './TextFractionalFontSizeExample';
 import TextSharedExamples from './TextSharedExamples';
 import TextWidthModeExample from './TextWidthModeExample';
 
@@ -1493,6 +1496,24 @@ const examples = [
           </RNTesterText>
         </View>
       );
+    },
+  },
+  {
+    title: 'Fractional font size (enableFractionalFontSizeAndroid)',
+    name: 'fractionalFontSize',
+    description:
+      'Renders 10 lines at fontSize 13 / lineHeight 18 and reports pixel widths and heights. ' +
+      'On a density 2.625 device (420 dpi) the flag renders 34.125 px text with 47 px lines ' +
+      '(470 px block); without it text is 35 px with 48 px lines (480 px block).',
+    render(): React.Node {
+      return <TextFractionalFontSizeExample />;
+    },
+  },
+  {
+    title: 'Fractional font size regression cases (verification only)',
+    name: 'fractionalFontSizeRegression',
+    render(): React.Node {
+      return <TextFractionalFontSizeRegressionExample />;
     },
   },
   {

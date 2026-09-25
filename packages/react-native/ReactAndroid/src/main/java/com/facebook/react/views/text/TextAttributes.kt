@@ -9,6 +9,7 @@ package com.facebook.react.views.text
 
 import com.facebook.common.logging.FLog
 import com.facebook.react.common.ReactConstants
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.uimanager.ViewDefaults
 
@@ -62,15 +63,18 @@ public class TextAttributes {
       field = maxFontSizeMultiplier
     }
 
-  public val effectiveFontSize: Int
+  /**
+   * The font size in pixels. Rounded up to a whole pixel unless `enableFractionalFontSizeAndroid`
+   * is on, in which case the unrounded value is returned.
+   */
+  public val effectiveFontSize: Float
     get() {
       val fontSize = if (!fontSize.isNaN()) fontSize else ViewDefaults.FONT_SIZE_SP
-      return if (allowFontScaling) {
-        Math.ceil(PixelUtil.toPixelFromSP(fontSize, effectiveMaxFontSizeMultiplier).toDouble())
-            .toInt()
-      } else {
-        Math.ceil(PixelUtil.toPixelFromDIP(fontSize).toDouble()).toInt()
-      }
+      val fontSizePixels =
+          if (allowFontScaling) PixelUtil.toPixelFromSP(fontSize, effectiveMaxFontSizeMultiplier)
+          else PixelUtil.toPixelFromDIP(fontSize)
+      return if (ReactNativeFeatureFlags.enableFractionalFontSizeAndroid()) fontSizePixels
+      else Math.ceil(fontSizePixels.toDouble()).toFloat()
     }
 
   public val effectiveLineHeight: Float

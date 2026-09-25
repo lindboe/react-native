@@ -6154,7 +6154,7 @@ public final class com/facebook/react/views/text/TextAttributeProps {
 	public final fun getEffectiveLineHeight ()F
 	public final fun getFontFamily ()Ljava/lang/String;
 	public final fun getFontFeatureSettings ()Ljava/lang/String;
-	public final fun getFontSize ()I
+	public final fun getFontSize ()F
 	public final fun getFontStyle ()I
 	public final fun getFontVariationSettings ()Ljava/lang/String;
 	public final fun getFontWeight ()I
@@ -6191,7 +6191,7 @@ public final class com/facebook/react/views/text/TextAttributes {
 	public fun <init> ()V
 	public final fun applyChild (Lcom/facebook/react/views/text/TextAttributes;)Lcom/facebook/react/views/text/TextAttributes;
 	public final fun getAllowFontScaling ()Z
-	public final fun getEffectiveFontSize ()I
+	public final fun getEffectiveFontSize ()F
 	public final fun getEffectiveLetterSpacing ()F
 	public final fun getEffectiveLineHeight ()F
 	public final fun getEffectiveMaxFontSizeMultiplier ()F

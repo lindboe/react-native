@@ -7,7 +7,20 @@
 
 package com.facebook.react.views.text.internal.span
 
-import android.text.style.AbsoluteSizeSpan
+import android.text.TextPaint
+import android.text.style.MetricAffectingSpan
 
-/** Wraps [AbsoluteSizeSpan] as a [ReactSpan]. */
-internal class ReactAbsoluteSizeSpan(size: Int) : AbsoluteSizeSpan(size), ReactSpan
+/**
+ * Sets an absolute text size in pixels, like [android.text.style.AbsoluteSizeSpan], but accepts a
+ * fractional size so text can be measured and drawn at the exact `fontSize x density` value.
+ */
+internal class ReactAbsoluteSizeSpan(val size: Float) : MetricAffectingSpan(), ReactSpan {
+
+  override fun updateDrawState(ds: TextPaint) {
+    ds.textSize = size
+  }
+
+  override fun updateMeasureState(paint: TextPaint) {
+    paint.textSize = size
+  }
+}

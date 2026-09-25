@@ -37,6 +37,7 @@ import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.common.ReactConstants;
 import com.facebook.react.common.annotations.UnstableReactNativeAPI;
 import com.facebook.react.internal.SystraceSection;
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags;
 import com.facebook.react.uimanager.BackgroundStyleApplicator;
 import com.facebook.react.uimanager.LengthPercentage;
 import com.facebook.react.uimanager.LengthPercentageType;
@@ -532,10 +533,16 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
   }
 
   public void setFontSize(float fontSize) {
-    mFontSize =
+    float fontSizePixels =
         mAdjustsFontSizeToFit
-            ? (float) Math.ceil(PixelUtil.toPixelFromSP(fontSize))
-            : (float) Math.ceil(PixelUtil.toPixelFromDIP(fontSize));
+            ? PixelUtil.toPixelFromSP(fontSize)
+            : PixelUtil.toPixelFromDIP(fontSize);
+    // Must match the size computed by TextAttributeProps and used by ReactAbsoluteSizeSpan, so
+    // the view's own text size (see applyTextAttributes) is consistent with the spans.
+    mFontSize =
+        ReactNativeFeatureFlags.enableFractionalFontSizeAndroid()
+            ? fontSizePixels
+            : (float) Math.ceil(fontSizePixels);
 
     applyTextAttributes();
   }
