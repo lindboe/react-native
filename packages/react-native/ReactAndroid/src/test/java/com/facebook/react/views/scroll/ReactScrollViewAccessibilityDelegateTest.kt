@@ -20,6 +20,7 @@ import com.facebook.react.bridge.JavaOnlyMap
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactTestHelper.createTestReactApplicationContext
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
+import com.facebook.react.uimanager.ReactAccessibilityDelegate
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.testutils.shadows.ShadowSoLoader
 import org.assertj.core.api.Assertions.assertThat
@@ -189,5 +190,58 @@ class ReactScrollViewAccessibilityDelegateTest {
 
     assertThat(event.fromIndex).isEqualTo(1)
     assertThat(event.toIndex).isEqualTo(2)
+  }
+
+  @Test
+  fun className_isAListForACollectionWithOneColumn() {
+    val scrollView = ReactScrollView(themedContext)
+    scrollView.setTag(
+        R.id.accessibility_collection,
+        JavaOnlyMap.of("rowCount", 40, "columnCount", 1),
+    )
+
+    assertThat(nodeInfoOf(scrollView).className).isEqualTo("android.widget.AbsListView")
+  }
+
+  @Test
+  fun className_isAListForAHorizontalCollection() {
+    val scrollView = ReactHorizontalScrollView(themedContext)
+    scrollView.setTag(
+        R.id.accessibility_collection,
+        JavaOnlyMap.of("rowCount", 1, "columnCount", 8),
+    )
+
+    assertThat(nodeInfoOf(scrollView).className).isEqualTo("android.widget.AbsListView")
+  }
+
+  @Test
+  fun className_isAGridForACollectionWithRowsAndColumns() {
+    val scrollView = ReactScrollView(themedContext)
+    scrollView.setTag(
+        R.id.accessibility_collection,
+        JavaOnlyMap.of("rowCount", 10, "columnCount", 3),
+    )
+
+    assertThat(nodeInfoOf(scrollView).className).isEqualTo("android.widget.GridView")
+  }
+
+  @Test
+  fun className_anExplicitRoleWinsOverTheCollection() {
+    val scrollView = ReactScrollView(themedContext)
+    scrollView.setTag(
+        R.id.accessibility_collection,
+        JavaOnlyMap.of("rowCount", 40, "columnCount", 1),
+    )
+    scrollView.setTag(R.id.accessibility_role, ReactAccessibilityDelegate.AccessibilityRole.NONE)
+
+    assertThat(nodeInfoOf(scrollView).className).isEqualTo("android.view.View")
+  }
+
+  @Test
+  fun className_isNotAListOrGridWithoutACollection() {
+    val scrollView = ReactScrollView(themedContext)
+
+    assertThat(nodeInfoOf(scrollView).className?.toString())
+        .isNotIn("android.widget.AbsListView", "android.widget.GridView")
   }
 }

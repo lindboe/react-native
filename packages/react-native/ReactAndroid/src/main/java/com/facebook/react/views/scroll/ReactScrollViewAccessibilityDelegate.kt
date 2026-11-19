@@ -156,7 +156,23 @@ internal class ReactScrollViewAccessibilityDelegate : AccessibilityDelegateCompa
     val accessibilityCollection = view.getTag(R.id.accessibility_collection) as? ReadableMap
 
     if (accessibilityCollection != null) {
-      info.setCollectionInfo(getCollectionInfo(accessibilityCollection))
+      val collectionInfo = getCollectionInfo(accessibilityCollection)
+      info.setCollectionInfo(collectionInfo)
+
+      // TalkBack announces a collection ("in list", "2 of 40") only when the collection's role is
+      // a list or a grid, and it gives any android.widget.ScrollView the scroll view role before
+      // looking at its CollectionInfo. Report the class the matching role would, unless the app
+      // set a role itself.
+      if (accessibilityRole == null) {
+        info.className =
+            AccessibilityRole.getValue(
+                if (collectionInfo.rowCount > 1 && collectionInfo.columnCount > 1) {
+                  AccessibilityRole.GRID
+                } else {
+                  AccessibilityRole.LIST
+                }
+            )
+      }
     }
 
     if (view is ReactAccessibleScrollView) {
