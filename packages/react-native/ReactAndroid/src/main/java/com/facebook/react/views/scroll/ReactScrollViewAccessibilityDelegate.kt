@@ -7,6 +7,7 @@
 
 package com.facebook.react.views.scroll
 
+import android.graphics.Rect
 import android.view.View
 import android.view.ViewGroup
 import android.view.accessibility.AccessibilityEvent
@@ -57,19 +58,19 @@ internal class ReactScrollViewAccessibilityDelegate : AccessibilityDelegateCompa
 
     event.itemCount = accessibilityCollection.getInt("itemCount")
 
-    val contentView = (view as? ViewGroup)?.getChildAt(0) as? ViewGroup ?: return
+    val scrollView = view as? ViewGroup ?: return
+    val contentView = scrollView.getChildAt(0) as? ViewGroup ?: return
+
+    // The visible part of the scroll view's content, in the coordinates of its scrolled content.
+    val viewport =
+        Rect(view.scrollX, view.scrollY, view.scrollX + view.width, view.scrollY + view.height)
 
     var firstVisibleIndex: Int? = null
     var lastVisibleIndex: Int? = null
 
     for (index in 0..<contentView.childCount) {
       val nextChild = contentView.getChildAt(index)
-      val isVisible: Boolean =
-          if (view is ReactAccessibleScrollView) {
-            view.isPartiallyScrolledInView(nextChild)
-          } else {
-            return
-          }
+      val isVisible = isInViewport(scrollView, nextChild, viewport)
       var accessibilityCollectionItem: ReadableMap? =
           nextChild.getTag(R.id.accessibility_collection_item) as? ReadableMap
 
@@ -104,6 +105,21 @@ internal class ReactScrollViewAccessibilityDelegate : AccessibilityDelegateCompa
         event.toIndex = lastVisibleIndex
       }
     }
+  }
+
+  /**
+   * Whether any part of [child], a descendant of [scrollView], is inside [viewport].
+   *
+   * Fully visible children count as well as partly visible ones: the scroll event's fromIndex and
+   * toIndex are the first and last visible items, as AdapterView reports them.
+   * [ReactAccessibleScrollView.isPartiallyScrolledInView] does not fit, since it is true only for a
+   * child that is cut off by the viewport.
+   */
+  private fun isInViewport(scrollView: ViewGroup, child: View, viewport: Rect): Boolean {
+    val childRect = Rect()
+    child.getDrawingRect(childRect)
+    scrollView.offsetDescendantRectToMyCoords(child, childRect)
+    return Rect.intersects(childRect, viewport)
   }
 
   private fun onInitializeAccessibilityNodeInfoInternal(
