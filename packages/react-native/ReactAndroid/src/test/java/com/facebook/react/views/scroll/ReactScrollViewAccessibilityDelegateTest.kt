@@ -14,6 +14,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.accessibility.AccessibilityEvent
 import android.widget.FrameLayout
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
 import com.facebook.react.R
 import com.facebook.react.bridge.JavaOnlyMap
 import com.facebook.react.bridge.ReactApplicationContext
@@ -135,5 +136,58 @@ class ReactScrollViewAccessibilityDelegateTest {
 
     assertThat(event.fromIndex).isEqualTo(0)
     assertThat(event.toIndex).isEqualTo(4)
+  }
+
+  private fun nodeInfoOf(scrollView: View): AccessibilityNodeInfoCompat =
+      AccessibilityNodeInfoCompat.wrap(scrollView.createAccessibilityNodeInfo())
+
+  @Test
+  fun collectionInfo_isTakenFromTheCollectionMap() {
+    val scrollView = ReactScrollView(themedContext)
+    scrollView.setTag(
+        R.id.accessibility_collection,
+        JavaOnlyMap.of("rowCount", 40, "columnCount", 1, "hierarchical", true, "itemCount", 40),
+    )
+
+    val collectionInfo = nodeInfoOf(scrollView).collectionInfo
+
+    assertThat(collectionInfo).isNotNull
+    assertThat(collectionInfo!!.rowCount).isEqualTo(40)
+    assertThat(collectionInfo.columnCount).isEqualTo(1)
+    assertThat(collectionInfo.isHierarchical).isTrue()
+  }
+
+  @Test
+  fun collectionInfo_absentMembersAreUnknownInsteadOfThrowing() {
+    val scrollView = ReactScrollView(themedContext)
+    scrollView.setTag(R.id.accessibility_collection, JavaOnlyMap.of("rowCount", 3))
+
+    val collectionInfo = nodeInfoOf(scrollView).collectionInfo
+
+    assertThat(collectionInfo).isNotNull
+    assertThat(collectionInfo!!.rowCount).isEqualTo(3)
+    assertThat(collectionInfo.columnCount).isEqualTo(-1)
+    assertThat(collectionInfo.isHierarchical).isFalse()
+  }
+
+  @Test
+  fun scrollEvent_absentItemCountIsUnknownInsteadOfThrowing() {
+    val scrollView = ReactScrollView(themedContext)
+    scrollView.setTag(R.id.accessibility_collection, JavaOnlyMap.of("rowCount", 3))
+
+    assertThat(scrollEventOf(scrollView).itemCount).isEqualTo(-1)
+  }
+
+  @Test
+  fun scrollEvent_itemsWithoutAnItemIndexAreSkipped() {
+    val scrollView = collection(ReactScrollView(themedContext), false, 3, 50, 200)
+    (scrollView.getChildAt(0) as ViewGroup)
+        .getChildAt(0)
+        .setTag(R.id.accessibility_collection_item, JavaOnlyMap.of("rowIndex", 0))
+
+    val event = scrollEventOf(scrollView)
+
+    assertThat(event.fromIndex).isEqualTo(1)
+    assertThat(event.toIndex).isEqualTo(2)
   }
 }

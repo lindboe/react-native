@@ -458,4 +458,52 @@ class ReactAccessibilityDelegateTest {
     assertThat(result).isTrue()
     assertThat(view.getTag(R.id.accessibility_state_expanded)).isEqualTo(false)
   }
+
+  @Test
+  fun testCollectionItemInfo_isTakenFromTheCollectionItemMap() {
+    view.setTag(
+        R.id.accessibility_collection_item,
+        JavaOnlyMap.of(
+            "rowIndex",
+            3,
+            "rowSpan",
+            1,
+            "columnIndex",
+            0,
+            "columnSpan",
+            1,
+            "heading",
+            true,
+            "itemIndex",
+            3,
+        ),
+    )
+    val info = AccessibilityNodeInfoCompat.obtain()
+
+    accessibilityDelegate.onInitializeAccessibilityNodeInfo(view, info)
+
+    val item = info.collectionItemInfo
+    assertThat(item).isNotNull
+    assertThat(item!!.rowIndex).isEqualTo(3)
+    assertThat(item.rowSpan).isEqualTo(1)
+    assertThat(item.columnIndex).isEqualTo(0)
+    assertThat(item.columnSpan).isEqualTo(1)
+    assertThat(item.isHeading).isTrue()
+  }
+
+  @Test
+  fun testCollectionItemInfo_absentMembersTakeDefaultsInsteadOfThrowing() {
+    view.setTag(R.id.accessibility_collection_item, JavaOnlyMap.of("rowIndex", 2))
+    val info = AccessibilityNodeInfoCompat.obtain()
+
+    accessibilityDelegate.onInitializeAccessibilityNodeInfo(view, info)
+
+    val item = info.collectionItemInfo
+    assertThat(item).isNotNull
+    assertThat(item!!.rowIndex).isEqualTo(2)
+    assertThat(item.rowSpan).isEqualTo(1)
+    assertThat(item.columnIndex).isEqualTo(-1)
+    assertThat(item.columnSpan).isEqualTo(1)
+    assertThat(item.isHeading).isFalse()
+  }
 }

@@ -110,17 +110,9 @@ public open class ReactAccessibilityDelegate( // The View this delegate is attac
     val accessibilityActions = host.getTag(R.id.accessibility_actions) as ReadableArray?
 
     val accessibilityCollectionItem =
-        host.getTag(R.id.accessibility_collection_item) as ReadableMap?
+        host.getTag(R.id.accessibility_collection_item) as? ReadableMap
     if (accessibilityCollectionItem != null) {
-      val rowIndex = accessibilityCollectionItem.getInt("rowIndex")
-      val columnIndex = accessibilityCollectionItem.getInt("columnIndex")
-      val rowSpan = accessibilityCollectionItem.getInt("rowSpan")
-      val columnSpan = accessibilityCollectionItem.getInt("columnSpan")
-      val heading = accessibilityCollectionItem.getBoolean("heading")
-
-      val collectionItemCompat =
-          CollectionItemInfoCompat.obtain(rowIndex, rowSpan, columnIndex, columnSpan, heading)
-      info.setCollectionItemInfo(collectionItemCompat)
+      info.setCollectionItemInfo(getCollectionItemInfo(accessibilityCollectionItem))
     }
 
     if (accessibilityActions != null) {
@@ -666,6 +658,24 @@ public open class ReactAccessibilityDelegate( // The View this delegate is attac
         }
       }
     }
+
+    /**
+     * Builds the [CollectionItemInfoCompat] for an `accessibilityCollectionItem` map. Members the
+     * map leaves out take the values Android uses for an unknown position: index -1, span 1, not a
+     * heading.
+     */
+    @JvmStatic
+    internal fun getCollectionItemInfo(item: ReadableMap): CollectionItemInfoCompat =
+        CollectionItemInfoCompat.obtain(
+            item.getIntOrDefault("rowIndex", -1),
+            item.getIntOrDefault("rowSpan", 1),
+            item.getIntOrDefault("columnIndex", -1),
+            item.getIntOrDefault("columnSpan", 1),
+            item.hasKey("heading") && !item.isNull("heading") && item.getBoolean("heading"),
+        )
+
+    internal fun ReadableMap.getIntOrDefault(name: String, default: Int): Int =
+        if (hasKey(name) && !isNull(name)) getInt(name) else default
 
     // TODO: Eventually support for other languages on talkback
     @JvmStatic

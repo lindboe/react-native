@@ -19,6 +19,7 @@ import com.facebook.react.bridge.ReactSoftExceptionLogger
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.uimanager.ReactAccessibilityDelegate
 import com.facebook.react.uimanager.ReactAccessibilityDelegate.AccessibilityRole
+import com.facebook.react.uimanager.ReactAccessibilityDelegate.Companion.getIntOrDefault
 
 internal class ReactScrollViewAccessibilityDelegate : AccessibilityDelegateCompat() {
 
@@ -52,11 +53,30 @@ internal class ReactScrollViewAccessibilityDelegate : AccessibilityDelegateCompa
     }
   }
 
+  internal companion object {
+    /**
+     * Builds the [AccessibilityNodeInfoCompat.CollectionInfoCompat] for an
+     * `accessibilityCollection` map. A row or column count the map leaves out is -1, which Android
+     * and TalkBack treat as unknown.
+     */
+    fun getCollectionInfo(
+        collection: ReadableMap
+    ): AccessibilityNodeInfoCompat.CollectionInfoCompat =
+        AccessibilityNodeInfoCompat.CollectionInfoCompat.obtain(
+            collection.getIntOrDefault("rowCount", -1),
+            collection.getIntOrDefault("columnCount", -1),
+            collection.hasKey("hierarchical") &&
+                !collection.isNull("hierarchical") &&
+                collection.getBoolean("hierarchical"),
+        )
+  }
+
   private fun onInitializeAccessibilityEventInternal(view: View, event: AccessibilityEvent) {
     val accessibilityCollection =
         view.getTag(R.id.accessibility_collection) as? ReadableMap ?: return
 
-    event.itemCount = accessibilityCollection.getInt("itemCount")
+    // -1 is AccessibilityRecord's value for an unknown count.
+    event.itemCount = accessibilityCollection.getIntOrDefault("itemCount", -1)
 
     val scrollView = view as? ViewGroup ?: return
     val contentView = scrollView.getChildAt(0) as? ViewGroup ?: return
@@ -93,11 +113,12 @@ internal class ReactScrollViewAccessibilityDelegate : AccessibilityDelegateCompa
         }
       }
 
-      if (isVisible && accessibilityCollectionItem != null) {
+      val itemIndex = accessibilityCollectionItem?.getIntOrDefault("itemIndex", -1) ?: -1
+      if (isVisible && itemIndex >= 0) {
         if (firstVisibleIndex == null) {
-          firstVisibleIndex = accessibilityCollectionItem.getInt("itemIndex")
+          firstVisibleIndex = itemIndex
         }
-        lastVisibleIndex = accessibilityCollectionItem.getInt("itemIndex")
+        lastVisibleIndex = itemIndex
       }
 
       if (firstVisibleIndex != null && lastVisibleIndex != null) {
@@ -135,17 +156,7 @@ internal class ReactScrollViewAccessibilityDelegate : AccessibilityDelegateCompa
     val accessibilityCollection = view.getTag(R.id.accessibility_collection) as? ReadableMap
 
     if (accessibilityCollection != null) {
-      val rowCount = accessibilityCollection.getInt("rowCount")
-      val columnCount = accessibilityCollection.getInt("columnCount")
-      val hierarchical = accessibilityCollection.getBoolean("hierarchical")
-
-      val collectionInfoCompat =
-          AccessibilityNodeInfoCompat.CollectionInfoCompat.obtain(
-              rowCount,
-              columnCount,
-              hierarchical,
-          )
-      info.setCollectionInfo(collectionInfoCompat)
+      info.setCollectionInfo(getCollectionInfo(accessibilityCollection))
     }
 
     if (view is ReactAccessibleScrollView) {
