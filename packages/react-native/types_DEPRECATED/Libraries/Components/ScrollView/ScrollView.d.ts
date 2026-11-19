@@ -19,6 +19,7 @@ import {
 } from '../../Types/CoreEventTypes';
 import {RefreshControlProps} from '../RefreshControl/RefreshControl';
 import {Touchable} from '../Touchable/Touchable';
+import {AccessibilityCollection} from '../View/ViewAccessibility';
 import {ViewProps} from '../View/ViewPropTypes';
 import {View} from '../View/View';
 
@@ -527,6 +528,16 @@ export interface ScrollViewPropsIOS {
 }
 
 export interface ScrollViewPropsAndroid {
+  /**
+   * Describes the scroll view as a collection (a list or a grid) so that
+   * TalkBack announces it like a native list: "in list, 40 items" on entering
+   * and the position of each item. Mark each item with
+   * `accessibilityCollectionItem`.
+   *
+   * @platform android
+   */
+  accessibilityCollection?: AccessibilityCollection | null | undefined;
+
   /**
    * Sometimes a scrollview takes up more space than its content fills.
    * When this is the case, this prop will fill the rest of the

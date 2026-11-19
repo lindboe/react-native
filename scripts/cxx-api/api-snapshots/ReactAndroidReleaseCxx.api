@@ -630,6 +630,8 @@ void facebook::react::fromRawValue(const facebook::react::PropsParserContext& co
 void facebook::react::fromRawValue(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, facebook::yoga::PositionType& result);
 void facebook::react::fromRawValue(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, facebook::yoga::Style::Length& result);
 void facebook::react::fromRawValue(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, facebook::yoga::Wrap& result);
+void facebook::react::fromRawValue(const facebook::react::PropsParserContext&, const facebook::react::RawValue& value, facebook::react::AccessibilityCollection& result);
+void facebook::react::fromRawValue(const facebook::react::PropsParserContext&, const facebook::react::RawValue& value, facebook::react::AccessibilityCollectionItem& result);
 void facebook::react::fromRawValue(const facebook::react::PropsParserContext&, const facebook::react::RawValue& value, facebook::react::AccessibilityValue& result);
 void facebook::react::fromRawValue(const facebook::react::PropsParserContext&, const facebook::react::RawValue& value, facebook::react::BlendMode& result);
 void facebook::react::fromRawValue(const facebook::react::PropsParserContext&, const facebook::react::RawValue& value, facebook::react::CornerInsets& result);
@@ -657,6 +659,8 @@ bool facebook::react::operator==(const facebook::react::LayoutConstraints& lhs, 
 bool facebook::react::operator==(const facebook::react::LayoutContext& lhs, const facebook::react::LayoutContext& rhs);
 bool facebook::react::operator==(const facebook::react::Size& rhs, const facebook::react::Size& lhs) noexcept;
 constexpr bool facebook::react::operator&(facebook::react::ModalHostViewSupportedOrientationsMask const lhs, enum facebook::react::ModalHostViewSupportedOrientations const rhs);
+constexpr bool facebook::react::operator==(const facebook::react::AccessibilityCollection& lhs, const facebook::react::AccessibilityCollection& rhs);
+constexpr bool facebook::react::operator==(const facebook::react::AccessibilityCollectionItem& lhs, const facebook::react::AccessibilityCollectionItem& rhs);
 constexpr bool facebook::react::operator==(const facebook::react::AccessibilityState& lhs, const facebook::react::AccessibilityState& rhs);
 constexpr bool facebook::react::operator==(const facebook::react::AccessibilityValue& lhs, const facebook::react::AccessibilityValue& rhs);
 constexpr enum facebook::react::AccessibilityTraits facebook::react::operator&(const enum facebook::react::AccessibilityTraits lhs, const enum facebook::react::AccessibilityTraits rhs);
@@ -1334,6 +1338,7 @@ class facebook::react::HostPlatformViewProps : public facebook::react::BaseViewP
   public bool renderToHardwareTextureAndroid;
   public bool screenReaderFocusable;
   public facebook::react::Float elevation;
+  public std::optional<facebook::react::AccessibilityCollectionItem> accessibilityCollectionItem;
   public std::optional<facebook::react::NativeDrawable> nativeBackground;
   public std::optional<facebook::react::NativeDrawable> nativeForeground;
   public std::optional<int> nextFocusDown;
@@ -3046,6 +3051,22 @@ enum facebook::react::UnitType {
 struct facebook::react::AccessibilityAction {
   public std::optional<std::string> label;
   public std::string name;
+}
+
+struct facebook::react::AccessibilityCollection {
+  public std::optional<bool> hierarchical;
+  public std::optional<int> columnCount;
+  public std::optional<int> itemCount;
+  public std::optional<int> rowCount;
+}
+
+struct facebook::react::AccessibilityCollectionItem {
+  public std::optional<bool> heading;
+  public std::optional<int> columnIndex;
+  public std::optional<int> columnSpan;
+  public std::optional<int> itemIndex;
+  public std::optional<int> rowIndex;
+  public std::optional<int> rowSpan;
 }
 
 struct facebook::react::AccessibilityLabelledBy {

@@ -14,6 +14,7 @@
 #include <react/renderer/components/view/propsConversions.h>
 #include <react/renderer/core/graphicsConversions.h>
 #include <react/renderer/core/propsConversions.h>
+#include <react/renderer/debug/debugStringConvertibleUtils.h>
 #include <react/renderer/graphics/TransformUtils.h>
 
 namespace facebook::react {
@@ -66,6 +67,12 @@ HostPlatformViewProps::HostPlatformViewProps(
           "screenReaderFocusable",
           sourceProps.screenReaderFocusable,
           {})),
+      accessibilityCollectionItem(convertRawProp(
+          context,
+          rawProps,
+          "accessibilityCollectionItem",
+          sourceProps.accessibilityCollectionItem,
+          {})),
       nextFocusDown(convertRawProp(
           context,
           rawProps,
@@ -117,6 +124,7 @@ void HostPlatformViewProps::setProp(
     RAW_SET_PROP_SWITCH_CASE_BASIC(needsOffscreenAlphaCompositing);
     RAW_SET_PROP_SWITCH_CASE_BASIC(renderToHardwareTextureAndroid);
     RAW_SET_PROP_SWITCH_CASE_BASIC(screenReaderFocusable);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityCollectionItem);
     RAW_SET_PROP_SWITCH_CASE_BASIC(nextFocusDown);
     RAW_SET_PROP_SWITCH_CASE_BASIC(nextFocusForward);
     RAW_SET_PROP_SWITCH_CASE_BASIC(nextFocusLeft);
@@ -132,7 +140,13 @@ bool HostPlatformViewProps::getProbablyMoreHorizontalThanVertical_DEPRECATED()
 
 #if RN_DEBUG_STRING_CONVERTIBLE
 SharedDebugStringConvertibleList HostPlatformViewProps::getDebugProps() const {
-  return BaseViewProps::getDebugProps();
+  return BaseViewProps::getDebugProps() +
+      SharedDebugStringConvertibleList{
+          debugStringConvertibleItem(
+              "accessibilityCollectionItem",
+              accessibilityCollectionItem,
+              AccessibilityCollectionItem{}),
+      };
 }
 #endif
 
@@ -543,6 +557,36 @@ folly::dynamic HostPlatformViewProps::getDiffProps(
 
   if (screenReaderFocusable != oldProps->screenReaderFocusable) {
     result["screenReaderFocusable"] = screenReaderFocusable;
+  }
+
+  // BaseViewManager stores the map as a view tag, replacing the previous one,
+  // so a change to one member sends the whole object, and removal sends null.
+  if (accessibilityCollectionItem != oldProps->accessibilityCollectionItem) {
+    if (accessibilityCollectionItem.has_value()) {
+      folly::dynamic object = folly::dynamic::object();
+      const auto& item = *accessibilityCollectionItem;
+      if (item.rowIndex.has_value()) {
+        object["rowIndex"] = *item.rowIndex;
+      }
+      if (item.rowSpan.has_value()) {
+        object["rowSpan"] = *item.rowSpan;
+      }
+      if (item.columnIndex.has_value()) {
+        object["columnIndex"] = *item.columnIndex;
+      }
+      if (item.columnSpan.has_value()) {
+        object["columnSpan"] = *item.columnSpan;
+      }
+      if (item.heading.has_value()) {
+        object["heading"] = *item.heading;
+      }
+      if (item.itemIndex.has_value()) {
+        object["itemIndex"] = *item.itemIndex;
+      }
+      result["accessibilityCollectionItem"] = std::move(object);
+    } else {
+      result["accessibilityCollectionItem"] = nullptr;
+    }
   }
 
   if (role != oldProps->role) {

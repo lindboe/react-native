@@ -200,6 +200,8 @@ export {default as TouchableWithoutFeedback} from './Libraries/Components/Toucha
 export type {
   AccessibilityActionEvent,
   AccessibilityActionInfo,
+  AccessibilityCollection,
+  AccessibilityCollectionItem,
   AccessibilityProps,
   AccessibilityRole,
   AccessibilityState,

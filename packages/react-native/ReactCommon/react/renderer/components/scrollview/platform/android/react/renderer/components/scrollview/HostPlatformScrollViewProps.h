@@ -15,7 +15,9 @@
 #include <folly/dynamic.h>
 #include <react/renderer/components/scrollview/BaseScrollViewProps.h>
 #include <react/renderer/components/scrollview/primitives.h>
+#include <react/renderer/components/view/AccessibilityCollection.h>
 
+#include <optional>
 #include <string>
 
 namespace facebook::react {
@@ -39,6 +41,7 @@ class HostPlatformScrollViewProps : public BaseScrollViewProps {
   std::string overScrollMode{"auto"};
   SharedColor endFillColor{clearColor()};
   bool scrollsChildToFocus{true};
+  std::optional<AccessibilityCollection> accessibilityCollection{};
 
 #pragma mark - DebugStringConvertible
 

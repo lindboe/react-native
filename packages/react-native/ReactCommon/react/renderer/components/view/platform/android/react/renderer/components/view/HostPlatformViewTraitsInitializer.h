@@ -16,7 +16,11 @@ namespace facebook::react::HostPlatformViewTraitsInitializer {
 
 inline bool formsStackingContext(const ViewProps &viewProps)
 {
-  return viewProps.elevation != 0;
+  // TalkBack finds the collection item of a focused node by walking up its
+  // ancestors, so the view carrying accessibilityCollectionItem has to stay the
+  // native parent of its children. A view that only forms a view (and not a
+  // stacking context) would have its children hoisted into its parent.
+  return viewProps.elevation != 0 || viewProps.accessibilityCollectionItem.has_value();
 }
 
 inline bool formsView(const ViewProps &viewProps)

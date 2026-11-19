@@ -9,6 +9,7 @@
 
 #include <react/cxxstableapi/UmbrellaGuard.h>
 
+#include <react/renderer/components/view/AccessibilityCollection.h>
 #include <react/renderer/components/view/BaseViewProps.h>
 #include <react/renderer/components/view/NativeDrawable.h>
 #include <react/renderer/components/view/primitives.h>
@@ -45,6 +46,8 @@ class HostPlatformViewProps : public BaseViewProps {
   bool needsOffscreenAlphaCompositing{false};
   bool renderToHardwareTextureAndroid{false};
   bool screenReaderFocusable{false};
+
+  std::optional<AccessibilityCollectionItem> accessibilityCollectionItem{};
 
   std::optional<int> nextFocusDown{};
   std::optional<int> nextFocusForward{};
