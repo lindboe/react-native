@@ -14,6 +14,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.accessibility.AccessibilityEvent
 import android.widget.FrameLayout
+import android.widget.TextView
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
 import com.facebook.react.R
 import com.facebook.react.bridge.JavaOnlyMap
@@ -44,8 +45,9 @@ class ReactScrollViewAccessibilityDelegateTest {
     themedContext = ThemedReactContext(context, context, null, -1)
   }
 
-  private fun item(itemIndex: Int): View =
+  private fun item(itemIndex: Int, child: View? = null): View =
       FrameLayout(themedContext).apply {
+        child?.let { addView(it) }
         setTag(R.id.accessibility_collection_item, JavaOnlyMap.of("itemIndex", itemIndex))
       }
 
@@ -243,5 +245,110 @@ class ReactScrollViewAccessibilityDelegateTest {
 
     assertThat(nodeInfoOf(scrollView).className?.toString())
         .isNotIn("android.widget.AbsListView", "android.widget.GridView")
+  }
+
+  /** Lays out [children] as 100px rows of a vertical list in a 100x200 scroll view. */
+  private fun verticalList(vararg children: View): ReactScrollView {
+    val scrollView = ReactScrollView(themedContext)
+    val content = FrameLayout(themedContext)
+    children.forEach { content.addView(it) }
+    scrollView.addView(content)
+    scrollView.setTag(R.id.accessibility_collection, JavaOnlyMap.of("itemCount", 10))
+    scrollView.layout(0, 0, 100, 200)
+    content.layout(0, 0, 100, 100 * children.size)
+    children.forEachIndexed { row, child ->
+      child.layout(0, row * 100, 100, (row + 1) * 100)
+      fillWithDescendants(child)
+    }
+    return scrollView
+  }
+
+  /** Lays out each descendant of [view] over the whole of its parent. */
+  private fun fillWithDescendants(view: View) {
+    if (view is ViewGroup) {
+      for (index in 0..<view.childCount) {
+        val child = view.getChildAt(index)
+        child.layout(0, 0, view.width, view.height)
+        fillWithDescendants(child)
+      }
+    }
+  }
+
+  /** Wraps [child] in [depth] plain views, as cell renderers and custom wrappers do. */
+  private fun wrapped(child: View, depth: Int): View {
+    var result = child
+    repeat(depth) { result = FrameLayout(themedContext).apply { addView(result) } }
+    return result
+  }
+
+  @Test
+  fun scrollEvent_findsItemsAtAnyDepthNextToHeadersAndSpacers() {
+    val scrollView =
+        verticalList(
+            TextView(themedContext),
+            View(themedContext),
+            wrapped(item(0), 1),
+            wrapped(item(1), 3),
+            item(2),
+        )
+    scrollView.scrollTo(0, 200)
+
+    val event = scrollEventOf(scrollView)
+
+    assertThat(event.fromIndex).isEqualTo(0)
+    assertThat(event.toIndex).isEqualTo(1)
+  }
+
+  @Test
+  fun scrollEvent_rangeIsOrderedByIndexNotByChildOrder() {
+    val scrollView = verticalList(item(9), item(8), item(7))
+
+    val event = scrollEventOf(scrollView)
+
+    assertThat(event.fromIndex).isEqualTo(8)
+    assertThat(event.toIndex).isEqualTo(9)
+  }
+
+  @Test
+  fun scrollEvent_itemsOfANestedCollectionAreNotCounted() {
+    val nested = ReactScrollView(themedContext)
+    nested.setTag(R.id.accessibility_collection, JavaOnlyMap.of("rowCount", 3))
+    nested.addView(item(5))
+    val scrollView = verticalList(item(0), nested)
+
+    val event = scrollEventOf(scrollView)
+
+    assertThat(event.fromIndex).isEqualTo(0)
+    assertThat(event.toIndex).isEqualTo(0)
+  }
+
+  @Test
+  fun scrollEvent_itemsInsideAnItemAreNotCounted() {
+    val scrollView = verticalList(item(0, child = item(7)), item(1))
+
+    val event = scrollEventOf(scrollView)
+
+    assertThat(event.fromIndex).isEqualTo(0)
+    assertThat(event.toIndex).isEqualTo(1)
+  }
+
+  @Test
+  fun scrollEvent_hiddenItemsAreNotCounted() {
+    val scrollView = verticalList(item(0), item(1).apply { visibility = View.GONE })
+
+    val event = scrollEventOf(scrollView)
+
+    assertThat(event.fromIndex).isEqualTo(0)
+    assertThat(event.toIndex).isEqualTo(0)
+  }
+
+  @Test
+  fun scrollEvent_noVisibleItemLeavesTheRangeUnknown() {
+    val scrollView = verticalList(TextView(themedContext), View(themedContext))
+
+    val event = scrollEventOf(scrollView)
+
+    assertThat(event.fromIndex).isEqualTo(-1)
+    assertThat(event.toIndex).isEqualTo(-1)
   }
 }
