@@ -216,7 +216,88 @@ export type AccessibilityValue = Readonly<{
   text?: Stringish,
 }>;
 
+/**
+ * Describes a ScrollView as a collection for accessibility services, mapped to
+ * Android's `AccessibilityNodeInfo.CollectionInfo`.
+ *
+ * @platform android
+ */
+export type AccessibilityCollection = Readonly<{
+  /**
+   * Number of rows. For a vertical list, the number of items. Absent or -1
+   * means unknown, and TalkBack then announces neither the item count nor the
+   * position of each item.
+   */
+  rowCount?: number,
+
+  /**
+   * Number of columns. For a horizontal list, the number of items. Absent or
+   * -1 means unknown.
+   */
+  columnCount?: number,
+
+  /**
+   * Whether the collection is hierarchical, such as a tree. Defaults to false.
+   */
+  hierarchical?: boolean,
+
+  /**
+   * Total number of items, reported with the scroll events of the collection.
+   */
+  itemCount?: number,
+}>;
+
+/**
+ * Describes a view as an item of the nearest ancestor collection for
+ * accessibility services, mapped to Android's
+ * `AccessibilityNodeInfo.CollectionItemInfo`.
+ *
+ * @platform android
+ */
+export type AccessibilityCollectionItem = Readonly<{
+  /**
+   * Zero-based row of the item. For a vertical list, the index of the item.
+   */
+  rowIndex?: number,
+
+  /**
+   * Number of rows the item spans. Defaults to 1.
+   */
+  rowSpan?: number,
+
+  /**
+   * Zero-based column of the item. For a horizontal list, the index of the
+   * item.
+   */
+  columnIndex?: number,
+
+  /**
+   * Number of columns the item spans. Defaults to 1.
+   */
+  columnSpan?: number,
+
+  /**
+   * Whether the item is a heading, such as a section header. Defaults to false.
+   */
+  heading?: boolean,
+
+  /**
+   * Zero-based index of the item in the collection, used for the first and
+   * last visible items reported with the collection's scroll events.
+   */
+  itemIndex?: number,
+}>;
+
 export type AccessibilityPropsAndroid = Readonly<{
+  /**
+   * Describes a view as an item of the nearest ancestor ScrollView that has
+   * `accessibilityCollection`, so that TalkBack announces its position, such
+   * as "2 of 40".
+   *
+   * @platform android
+   */
+  accessibilityCollectionItem?: ?AccessibilityCollectionItem,
+
   /**
    * Identifies the element that labels the element it is applied to. When the assistive technology focuses on the component with this props,
    * the text is read aloud. The value should should match the nativeID of the related element.

@@ -55,7 +55,13 @@ HostPlatformScrollViewProps::HostPlatformScrollViewProps(
           rawProps,
           "scrollsChildToFocus",
           sourceProps.scrollsChildToFocus,
-          true)) {}
+          true)),
+      accessibilityCollection(convertRawProp(
+          context,
+          rawProps,
+          "accessibilityCollection",
+          sourceProps.accessibilityCollection,
+          {})) {}
 
 void HostPlatformScrollViewProps::setProp(
     const PropsParserContext& context,
@@ -76,6 +82,7 @@ void HostPlatformScrollViewProps::setProp(
     RAW_SET_PROP_SWITCH_CASE_BASIC(overScrollMode);
     RAW_SET_PROP_SWITCH_CASE_BASIC(endFillColor);
     RAW_SET_PROP_SWITCH_CASE_BASIC(scrollsChildToFocus);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityCollection);
   }
 }
 
@@ -107,7 +114,11 @@ SharedDebugStringConvertibleList HostPlatformScrollViewProps::getDebugProps()
           debugStringConvertibleItem(
               "scrollsChildToFocus",
               scrollsChildToFocus,
-              defaultScrollViewProps.scrollsChildToFocus)};
+              defaultScrollViewProps.scrollsChildToFocus),
+          debugStringConvertibleItem(
+              "accessibilityCollection",
+              accessibilityCollection,
+              AccessibilityCollection{})};
 }
 #endif
 
@@ -385,6 +396,30 @@ folly::dynamic HostPlatformScrollViewProps::getDiffProps(
 
   if (scrollsChildToFocus != oldProps->scrollsChildToFocus) {
     result["scrollsChildToFocus"] = scrollsChildToFocus;
+  }
+
+  // BaseViewManager stores the map as a view tag, replacing the previous one,
+  // so a change to one member sends the whole object, and removal sends null.
+  if (accessibilityCollection != oldProps->accessibilityCollection) {
+    if (accessibilityCollection.has_value()) {
+      folly::dynamic object = folly::dynamic::object();
+      const auto& collection = *accessibilityCollection;
+      if (collection.rowCount.has_value()) {
+        object["rowCount"] = *collection.rowCount;
+      }
+      if (collection.columnCount.has_value()) {
+        object["columnCount"] = *collection.columnCount;
+      }
+      if (collection.hierarchical.has_value()) {
+        object["hierarchical"] = *collection.hierarchical;
+      }
+      if (collection.itemCount.has_value()) {
+        object["itemCount"] = *collection.itemCount;
+      }
+      result["accessibilityCollection"] = std::move(object);
+    } else {
+      result["accessibilityCollection"] = nullptr;
+    }
   }
 
   return result;

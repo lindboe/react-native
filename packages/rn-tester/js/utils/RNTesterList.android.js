@@ -175,6 +175,13 @@ const APIs: Array<RNTesterModuleInfo> = (
       module: require('../examples/Accessibility/AccessibilityAndroidExample'),
     },
     {
+      key: 'AccessibilityCollectionAndroidExample',
+      category: 'Android',
+      module:
+        require('../examples/Accessibility/AccessibilityCollectionAndroidExample')
+          .default,
+    },
+    {
       key: 'AlertExample',
       category: 'UI',
       module: require('../examples/Alert/AlertExample').default,

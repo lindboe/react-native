@@ -65,6 +65,38 @@ TEST(ScrollViewPropsDiffTest, removingNestedScrollAndMomentumEventsEmitsFalse) {
   });
 }
 
+// BaseViewManager stores the map as a view tag that ReactScrollView's
+// accessibility delegate reads, so a change to one member sends the whole
+// object.
+TEST(
+    ScrollViewPropsDiffTest,
+    emitsTheWholeAccessibilityCollectionWhenOneMemberChanges) {
+  auto collection = [](int count) {
+    return dynamic::object(
+        "accessibilityCollection",
+        dynamic::object("rowCount", count)("columnCount", 1)(
+            "hierarchical", false)("itemCount", count));
+  };
+  expectPayloads({{collection(20)}, {collection(40)}});
+}
+
+// Absent members are not filled in; the view manager applies its defaults.
+TEST(ScrollViewPropsDiffTest, emitsOnlyThePresentAccessibilityCollectionMembers) {
+  expectPayloads({
+      {dynamic::object(
+          "accessibilityCollection", dynamic::object("rowCount", 3))},
+  });
+}
+
+// BaseViewManager clears the tag only for null.
+TEST(ScrollViewPropsDiffTest, removingAccessibilityCollectionEmitsNull) {
+  expectPayloads({
+      {dynamic::object(
+          "accessibilityCollection", dynamic::object("rowCount", 3))},
+      {dynamic::object("accessibilityCollection", nullptr)},
+  });
+}
+
 } // namespace facebook::react
 
 #endif

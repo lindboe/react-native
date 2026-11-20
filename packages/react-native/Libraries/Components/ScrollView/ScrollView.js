@@ -20,6 +20,7 @@ import type {
 } from '../../Types/CoreEventTypes';
 import type {EventSubscription} from '../../vendor/emitter/EventEmitter';
 import type {KeyboardEvent, KeyboardMetrics} from '../Keyboard/Keyboard';
+import type {AccessibilityCollection} from '../View/ViewAccessibility';
 import type {ViewProps} from '../View/ViewPropTypes';
 import type {ScrollViewStickyHeaderProps} from './ScrollViewStickyHeader';
 
@@ -425,6 +426,15 @@ export type ScrollViewPropsIOS = Readonly<{
 }>;
 
 export type ScrollViewPropsAndroid = Readonly<{
+  /**
+   * Describes the scroll view as a collection (a list or a grid) so that
+   * TalkBack announces it like a native list: "in list, 40 items" on entering
+   * and the position of each item. Mark each item with
+   * `accessibilityCollectionItem`.
+   *
+   * @platform android
+   */
+  accessibilityCollection?: ?AccessibilityCollection,
   /**
    * Enables nested scrolling for Android API level 21+. Nested scrolling is
    * supported by default on iOS.

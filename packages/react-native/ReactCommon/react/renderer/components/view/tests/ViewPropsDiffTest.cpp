@@ -152,6 +152,26 @@ TEST(ViewPropsDiffTest, removingAccessibilityValueEmitsNull) {
   });
 }
 
+// BaseViewManager stores the map as a view tag, so a change to one member
+// sends the whole object.
+TEST(ViewPropsDiffTest, emitsTheWholeAccessibilityCollectionItem) {
+  auto item = [](int index) {
+    return dynamic::object(
+        "accessibilityCollectionItem",
+        dynamic::object("rowIndex", index)("rowSpan", 1)("columnIndex", 0)(
+            "columnSpan", 1)("heading", false)("itemIndex", index));
+  };
+  expectPayloads({{item(1)}, {item(2)}});
+}
+
+TEST(ViewPropsDiffTest, removingAccessibilityCollectionItemEmitsNull) {
+  expectPayloads({
+      {dynamic::object(
+          "accessibilityCollectionItem", dynamic::object("rowIndex", 1))},
+      {dynamic::object("accessibilityCollectionItem", nullptr)},
+  });
+}
+
 } // namespace facebook::react
 
 #endif
